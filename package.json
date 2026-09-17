@@ -1,0 +1,16 @@
+{
+  "name": "rgpd-lusotravel",
+  "version": "1.0.0",
+  "description": "Formulário RGPD Lusotravel com geração de PDF",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "resend": "^3.2.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}

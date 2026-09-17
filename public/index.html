@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consentimentos & RGPD · Lusotravel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #1a3a5c;
+      --navy2:  #0f2236;
+      --gold:   #b89355;
+      --gold-l: #d4af72;
+      --cream:  #faf8f5;
+      --cream2: #f2ede6;
+      --border: #e2d9cc;
+      --text:   #1e2830;
+      --muted:  #7a7060;
+      --red:    #b03a2e;
+      --green:  #1d7a4a;
+      --white:  #ffffff;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--cream);
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(184,147,85,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(26,58,92,0.05) 0%, transparent 60%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    /* HEADER */
+    header {
+      background: var(--navy2);
+      padding: 0 48px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-l), var(--gold), transparent);
+    }
+    header img { height: 44px; }
+    .header-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 1.5px;
+      font-style: italic;
+    }
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 64px 24px 52px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: ''; display: block;
+      width: 28px; height: 1px;
+      background: var(--gold); opacity: 0.5;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 44px;
+      font-weight: 500;
+      color: var(--navy);
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 0;
+    }
+    .hero-title-row h1 {
+      margin-bottom: 16px;
+    }
+    .hero-logo {
+      height: 54px;
+      width: auto;
+      margin-bottom: 14px;
+      opacity: 0.92;
+    }
+    .hero p {
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 490px;
+      margin: 0 auto;
+      line-height: 1.75;
+    }
+    /* LAYOUT */
+    .layout {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    /* CARD */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 50px 54px;
+      box-shadow: 0 1px 3px rgba(26,58,92,0.04), 0 10px 40px rgba(26,58,92,0.08);
+      position: relative;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--gold) 0%, rgba(184,147,85,0.15) 100%);
+      border-radius: 2px 0 0 2px;
+    }
+    /* STEP */
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 30px;
+    }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
+    .step::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+    /* FIELDS */
+    .field { margin-bottom: 22px; }
+    .field label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .field label em { color: var(--red); font-style: normal; }
+    .field input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      background: var(--cream);
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: #b8ad9e; font-weight: 300; }
+    .field input:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(184,147,85,0.12);
+    }
+    .field input.error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(176,58,46,0.08);
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    /* DIVIDER */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    /* DOCS */
+    .doc-intro {
+      font-size: 13px; color: var(--muted);
+      font-weight: 300; margin-bottom: 18px; line-height: 1.65;
+    }
+    .doc-list { display: flex; flex-direction: column; gap: 10px; }
+    .doc-item {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: 2px; padding: 14px 18px;
+      transition: border-color 0.2s;
+    }
+    .doc-item:hover { border-color: rgba(184,147,85,0.5); }
+    .doc-icon {
+      width: 36px; height: 36px;
+      background: var(--navy); border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-icon svg { width: 17px; height: 17px; fill: rgba(255,255,255,0.88); }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-info strong { font-size: 13.5px; font-weight: 500; color: var(--navy); display: block; line-height: 1.3; }
+    .doc-info span { font-size: 11.5px; color: var(--muted); font-weight: 300; }
+    .doc-link {
+      font-size: 10.5px; font-weight: 600;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--gold); text-decoration: none;
+      border: 1px solid var(--gold); border-radius: 2px;
+      padding: 7px 14px; white-space: nowrap; flex-shrink: 0;
+      transition: background 0.18s, color 0.18s;
+    }
+    .doc-link:hover { background: var(--gold); color: var(--white); }
+    /* CHECKS */
+    .checks { display: flex; flex-direction: column; gap: 11px; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 16px 18px;
+      border: 1px solid var(--border); border-radius: 2px;
+      cursor: pointer; background: var(--cream);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .check-item:hover:not(.doc-locked) { border-color: rgba(184,147,85,0.5); background: #fdf9f4; }
+    .check-item.checked { border-color: var(--gold); background: #fdf9f4; }
+    .check-item.error-check { border-color: var(--red) !important; background: #fdf5f4 !important; }
+    .check-item input[type="checkbox"] {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; min-width: 18px;
+      border: 1.5px solid #c4b8a8; border-radius: 2px;
+      background: var(--white); cursor: pointer; margin-top: 2px;
+      position: relative; flex-shrink: 0;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .check-item input[type="checkbox"]:checked { background: var(--navy); border-color: var(--navy); }
+    .check-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 5px;
+      width: 5px; height: 9px;
+      border: 2px solid white;
+      border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+    .check-item input[type="checkbox"]:disabled { opacity: 0.3; cursor: not-allowed; }
+    .check-item .check-text { font-size: 13.5px; line-height: 1.62; color: var(--text); font-weight: 300; }
+    .check-item .check-text strong { font-weight: 500; }
+    .check-item .check-text a { color: var(--navy); font-weight: 500; text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 2px; }
+    .check-item .check-text a:hover { color: var(--gold); }
+    /* locked */
+    .check-item.doc-locked { opacity: 0.5; cursor: default; }
+    .lock-hint {
+      display: block; font-size: 11px;
+      color: var(--muted); margin-top: 5px;
+      font-style: italic; font-weight: 400;
+    }
+    /* optional */
+    .check-item.optional { border-style: dashed; }
+    .optional-tag {
+      display: inline-block;
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 2px; padding: 1px 6px;
+      margin-left: 6px; vertical-align: middle;
+    }
+    /* LEGAL NOTE */
+    .legal-note {
+      margin-top: 28px; padding: 16px 20px;
+      background: #fffdf5;
+      border-left: 3px solid var(--gold);
+      border-radius: 0 2px 2px 0;
+      font-size: 12.5px; color: #7a6830;
+      line-height: 1.65; font-weight: 300;
+    }
+    .legal-note strong { font-weight: 500; }
+    /* SUBMIT */
+    .btn-submit {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; margin-top: 32px; padding: 16px 24px;
+      background: var(--navy); color: var(--white);
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      border: none; border-radius: 2px; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: background 0.25s;
+    }
+    .btn-submit::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-l), var(--gold));
+      transform: scaleX(0); transition: transform 0.25s;
+    }
+    .btn-submit:hover { background: var(--navy2); }
+    .btn-submit:hover::after { transform: scaleX(1); }
+    .btn-submit:disabled { background: #8a9aaa; cursor: not-allowed; }
+    .btn-submit:disabled::after { display: none; }
+    /* MSG */
+    .msg { display: none; margin-top: 20px; padding: 16px 20px; border-radius: 2px; font-size: 14px; line-height: 1.55; }
+    .msg.success { display: block; background: #f0faf5; border: 1px solid #a8d8be; color: var(--green); }
+    .msg.error   { display: block; background: #fdf5f4; border: 1px solid #dba8a3; color: var(--red); }
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 36px 24px 48px;
+      font-size: 11.5px; color: var(--muted); font-weight: 300; line-height: 1.8;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+    .footer-line { width: 36px; height: 1px; background: var(--border); margin: 0 auto 16px; }
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    /* MOBILE */
+    @media (max-width: 620px) {
+      header { padding: 0 20px; }
+      .header-tagline { display: none; }
+      .hero { padding: 44px 20px 36px; }
+      .hero h1 { font-size: 30px; }
+      .card { padding: 32px 22px; }
+      .field-row { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" alt="Lusotravel" />
+  <span class="header-tagline">Creating Memorable Moments</span>
+</header>
+
+<form name="rgpd-consentimentos" netlify data-netlify="true" hidden>
+  <input type="text"     name="nome" />
+  <input type="text"     name="doc" />
+  <input type="email"    name="email" />
+  <input type="checkbox" name="cgv" />
+  <input type="checkbox" name="fin" />
+  <input type="checkbox" name="rgpd" />
+  <input type="checkbox" name="marketing" />
+</form>
+
+<div class="hero">
+  <div class="hero-eyebrow">Proteção de Dados Pessoais</div>
+  <div class="hero-title-row">
+    <img src="logo.png" alt="Lusotravel" class="hero-logo" />
+    <h1>Consentimentos & RGPD</h1>
+  </div>
+  <p>Para formalizar a sua reserva, pedimos que leia atentamente os documentos abaixo e confirme o seu consentimento nos termos do Regulamento Geral de Proteção de Dados.</p>
+</div>
+
+<div class="layout">
+<div class="card">
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-label">Os seus dados</div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="nome">Nome completo <em>*</em></label>
+      <input type="text" id="nome" placeholder="Maria Silva" autocomplete="name" />
+    </div>
+    <div class="field">
+      <label for="doc">Nº CC / Passaporte <em>*</em></label>
+      <input type="text" id="doc" placeholder="12345678 9ZZ4" />
+    </div>
+  </div>
+  <div class="field">
+    <label for="email">Endereço de email <em>*</em></label>
+    <input type="email" id="email" placeholder="maria@exemplo.pt" autocomplete="email" />
+  </div>
+
+  <hr class="divider" />
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-label">Documentos para consulta</div>
+  </div>
+
+  <p class="doc-intro">Leia os documentos antes de prosseguir — serão abertos numa nova janela. A confirmação abaixo só fica disponível após a leitura de cada documento.</p>
+
+  <div class="doc-list">
+    <div class="doc-item">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+      </div>
+      <div class="doc-info">
+        <strong>Condições Gerais de Venda</strong>
+        <span>Lusotravel · válido 01/01/2025 – 31/12/2026</span>
+      </div>
+      <a href="cgv.pdf" target="_blank" class="doc-link" id="link-cgv" onclick="documentoAberto('cgv', event)">Ver PDF</a>
+    </div>
+    <div class="doc-item">
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+      </div>
+      <div class="doc-info">
+        <strong>Ficha Informativa Normalizada (FIN)</strong>
+        <span>Lusotravel · serviços de viagem conexos</span>
+      </div>
+      <a href="#" class="doc-link" id="link-fin" onclick="abrirFIN(event)">Ver PDF</a>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-label">Declarações e consentimentos</div>
+  </div>
+
+  <div class="checks">
+
+    <label class="check-item doc-locked" id="lbl-cgv">
+      <input type="checkbox" id="chk-cgv" disabled />
+      <span class="check-text">
+        Li e aceito as <a href="cgv.pdf" target="_blank" onclick="documentoAberto('cgv', event)">Condições Gerais de Venda</a> da Lusotravel.
+        <span class="lock-hint">Abra o PDF acima para activar esta opção.</span>
+      </span>
+    </label>
+
+    <label class="check-item doc-locked" id="lbl-fin">
+      <input type="checkbox" id="chk-fin" disabled />
+      <span class="check-text">
+        Li a <a href="#" onclick="abrirFIN(event)">Ficha Informativa Normalizada</a> e confirmo que todos os participantes têm conhecimento e aceitam as condições pré-contratuais.
+        <span class="lock-hint">Introduza o seu nome e abra o PDF acima para activar.</span>
+      </span>
+    </label>
+
+    <label class="check-item" id="lbl-rgpd">
+      <input type="checkbox" id="chk-rgpd" />
+      <span class="check-text">
+        Declaro, nos termos do <strong>RGPD (UE) 2016/679</strong>, o meu consentimento para o tratamento dos meus dados pessoais pela Lusotravel, NIF 517 395 673, no âmbito da reserva efetuada. Tenho conhecimento dos meus direitos de acesso, retificação, eliminação, portabilidade e oposição.
+      </span>
+    </label>
+
+    <label class="check-item optional" id="lbl-mkt">
+      <input type="checkbox" id="chk-mkt" />
+      <span class="check-text">
+        Consinto o envio de comunicações de marketing sobre promoções e oportunidades de viagens pela Lusotravel.
+        <span class="optional-tag">Opcional</span>
+      </span>
+    </label>
+
+  </div>
+
+  <div class="legal-note">
+    <strong>Nota:</strong> Ao submeter este formulário será gerado um documento PDF com o registo do seu consentimento, com data e hora. Receberá uma cópia no email indicado.
+  </div>
+
+  <button class="btn-submit" id="btn-submit" onclick="submeter()">
+    <span id="btn-label">Confirmar e receber documento</span>
+    <div class="spinner" id="spinner"></div>
+  </button>
+
+  <div class="msg" id="msg"></div>
+
+</div>
+</div>
+
+<footer>
+  <div class="footer-line"></div>
+  <p>Lusotravel · PJM Unipessoal Lda · NIF 517 395 673 · RNAVT 12113</p>
+  <p>Rua Augusto Fraga 37 3b, 2725-680 Algueirão · <a href="mailto:geral@lusotravel.pt">geral@lusotravel.pt</a> · 932 878 377</p>
+</footer>
+
+<script>
+  function documentoAberto(id, event) {
+    if (event) event.stopPropagation();
+    const cb  = document.getElementById('chk-' + id);
+    const lbl = document.getElementById('lbl-' + id);
+    if (cb) {
+      cb.disabled = false;
+      lbl.classList.remove('doc-locked');
+      const hint = lbl.querySelector('.lock-hint');
+      if (hint) hint.style.display = 'none';
+    }
+  }
+
+  function abrirFIN(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const nome = document.getElementById('nome').value.trim();
+    if (!nome) {
+      document.getElementById('nome').classList.add('error');
+      document.getElementById('nome').focus();
+      mostrarMsg('Por favor introduza o seu nome completo antes de abrir a Ficha Informativa Normalizada.', 'error');
+      return false;
+    }
+    const url = '/.netlify/functions/fin-preview?nome=' + encodeURIComponent(nome);
+    window.open(url, '_blank');
+    documentoAberto('fin');
+    return false;
+  }
+
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.check-item').classList.toggle('checked', cb.checked);
+      cb.closest('.check-item').classList.remove('error-check');
+    });
+  });
+
+  function validar() {
+    let ok = true;
+    ['nome','doc','email'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) { el.classList.add('error'); ok = false; }
+      else el.classList.remove('error');
+    });
+    const emailEl = document.getElementById('email');
+    if (emailEl.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)) {
+      emailEl.classList.add('error'); ok = false;
+    }
+    ['cgv','fin','rgpd'].forEach(id => {
+      const cb  = document.getElementById('chk-' + id);
+      const lbl = document.getElementById('lbl-' + id);
+      if (!cb.checked) { lbl.classList.add('error-check'); ok = false; }
+    });
+    return ok;
+  }
+
+  ['nome','doc','email'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      document.getElementById(id).classList.remove('error');
+      document.getElementById('msg').className = 'msg';
+    });
+  });
+
+  async function submeter() {
+    if (!validar()) {
+      mostrarMsg('Por favor preencha todos os campos obrigatórios e confirme as declarações.', 'error');
+      return;
+    }
+    const btn     = document.getElementById('btn-submit');
+    const label   = document.getElementById('btn-label');
+    const spinner = document.getElementById('spinner');
+    btn.disabled = true;
+    label.style.display = 'none';
+    spinner.style.display = 'block';
+    document.getElementById('msg').className = 'msg';
+
+    const payload = {
+      nome:      document.getElementById('nome').value.trim(),
+      doc:       document.getElementById('doc').value.trim(),
+      email:     document.getElementById('email').value.trim(),
+      marketing: document.getElementById('chk-mkt').checked,
+    };
+
+    try {
+      const res  = await fetch('/.netlify/functions/gerar-rgpd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        try {
+          const fd = new FormData();
+          fd.append('form-name', 'rgpd-consentimentos');
+          fd.append('nome', payload.nome); fd.append('doc', payload.doc); fd.append('email', payload.email);
+          fd.append('cgv', 'on'); fd.append('fin', 'on'); fd.append('rgpd', 'on');
+          fd.append('marketing', payload.marketing ? 'on' : 'off');
+          await fetch('/', { method: 'POST', body: fd });
+        } catch (_) {}
+        mostrarMsg('✅ Documento enviado com sucesso! Verifique o seu email (incluindo a pasta de spam).', 'success');
+        btn.style.display = 'none';
+      } else {
+        throw new Error(data.message || 'Erro desconhecido');
+      }
+    } catch (err) {
+      mostrarMsg('Ocorreu um erro: ' + err.message + '. Tente novamente ou contacte geral@lusotravel.pt', 'error');
+      btn.disabled = false;
+      label.style.display = 'block';
+      spinner.style.display = 'none';
+    }
+  }
+
+  function mostrarMsg(texto, tipo) {
+    const el = document.getElementById('msg');
+    el.textContent = texto;
+    el.className = 'msg ' + tipo;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
+</body>
+</html>

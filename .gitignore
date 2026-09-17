@@ -1,0 +1,18 @@
+# Dependências e build
+node_modules/
+dist/
+.netlify/
+
+# Segredos — nunca versionar (o .env.example é o template)
+.env
+.env.*
+!.env.example
+
+# Sistema operativo e editores
+.DS_Store
+.idea/
+.vscode/
+
+# Logs e arquivos soltos
+*.log
+*.zip
