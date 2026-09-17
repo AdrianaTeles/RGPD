@@ -139,6 +139,12 @@ agência, muda a password no Netlify e faz **Trigger deploy**. O mecanismo de lo
 em `netlify/functions/lib/auth.js` — trocar por login individual (magic-link por email) só toca
 nesse ficheiro.
 
+**Consistência dos dados:** os blobs são lidos com consistência eventual (a por defeito).
+A consistência forte exigiria o `uncachedEdgeURL`, que o contexto das functions com assinatura
+Lambda (`handler(event)`) não inclui — em produção lança `BlobsConsistencyError`. Por isso as
+APIs de escrita devolvem o que gravaram em vez de reler. Se um dia for preciso leitura forte,
+o caminho é migrar as functions para a assinatura nova (`export default async (req, context)`).
+
 **Dívida técnica conhecida:** não há testes automatizados das functions; validar em deploy
 preview antes de publicar.
 

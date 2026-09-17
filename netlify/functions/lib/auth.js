@@ -62,13 +62,24 @@ async function tentativas(ip) {
   return t;
 }
 
+// As escritas do rate limit nunca podem derrubar o login: se os blobs falharem, o login
+// continua a funcionar (sem rate limit) e fica um aviso no log. O erro de blobs aparece
+// depois, onde importa — ao guardar dados no backoffice, com mensagem clara.
 async function registarFalha(ip) {
-  const t = await tentativas(ip);
-  await kv.set(`login-tentativas:${ip}`, { n: t.n + 1, desde: t.desde });
+  try {
+    const t = await tentativas(ip);
+    await kv.set(`login-tentativas:${ip}`, { n: t.n + 1, desde: t.desde });
+  } catch (err) {
+    console.warn("[auth] rate limit indisponível (não foi possível registar a falha):", err.message);
+  }
 }
 
 async function limparFalhas(ip) {
-  await kv.set(`login-tentativas:${ip}`, { n: 0, desde: Date.now() });
+  try {
+    await kv.set(`login-tentativas:${ip}`, { n: 0, desde: Date.now() });
+  } catch (err) {
+    console.warn("[auth] rate limit indisponível (não foi possível limpar tentativas):", err.message);
+  }
 }
 
 // ── API pública ──────────────────────────────────────────────────────────────

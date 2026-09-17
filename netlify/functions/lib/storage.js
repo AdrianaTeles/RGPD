@@ -57,8 +57,11 @@ export function initStorage(event) {
 // ── Helpers internos ─────────────────────────────────────────────────────────
 
 function store(name) {
-  // strong: o backoffice lê logo a seguir a escrever; não queremos ver o valor antigo.
-  return getStore({ name, consistency: "strong" });
+  // Consistência eventual (a por defeito). A "strong" exigiria o `uncachedEdgeURL`, que o
+  // contexto passado às functions com assinatura Lambda não inclui — lança
+  // BlobsConsistencyError em produção. Para não depender de reler logo após escrever,
+  // as APIs de escrita devolvem o que gravaram em vez de reler dos blobs.
+  return getStore(name);
 }
 
 // Localiza um ficheiro empacotado com a function (included_files no netlify.toml).
@@ -137,12 +140,16 @@ export async function getTextos() {
   return { ...TEXTOS_DEFAULT, ...(doBlob || {}) };
 }
 
+/** Grava e devolve os textos resultantes (defaults + gravados), sem reler dos blobs. */
 export async function setTextos(textos) {
+  const atuais = await getTextos();
   const permitidos = {};
   for (const k of Object.keys(TEXTOS_DEFAULT)) {
-    if (typeof textos[k] === "string") permitidos[k] = textos[k].trim();
+    const v = typeof textos[k] === "string" ? textos[k].trim() : atuais[k];
+    if (v !== TEXTOS_DEFAULT[k]) permitidos[k] = v;
   }
   await escreverJSON(STORE_CONFIG, "textos", permitidos);
+  return { ...TEXTOS_DEFAULT, ...permitidos };
 }
 
 // ── Documentos (PDFs) ────────────────────────────────────────────────────────
@@ -207,27 +214,41 @@ export async function setDocumento(nome, bytes, meta = {}) {
   if (atual && atual.data) {
     await s.set(`${nome}.anterior`, atual.data, { metadata: atual.metadata || {} });
   }
-  await s.set(nome, bytes, {
-    metadata: { tamanho: bytes.length, data: new Date().toISOString(), ...meta },
-  });
+  const metadata = { tamanho: bytes.length, data: new Date().toISOString(), ...meta };
+  await s.set(nome, bytes, { metadata });
+  // Info coerente com o que acabou de ser gravado, sem reler (consistência eventual).
+  const def = DOCUMENTOS[nome];
+  return {
+    nome, titulo: def.titulo, editavel: def.editavel, motivo: def.motivo,
+    origem: "blob", tamanho: metadata.tamanho, data: metadata.data,
+    temAnterior: !!(atual && atual.data),
+  };
 }
 
-/** Repõe a versão anterior. Devolve a origem resultante ("blob" ou "bundle"). */
+/** Repõe a versão anterior. Devolve a info do documento resultante (sem reler dos blobs). */
 export async function reporDocumento(nome) {
   validarNomeDocumento(nome);
+  const def = DOCUMENTOS[nome];
   const s = store(STORE_DOCS);
   const anterior = await s.getWithMetadata(`${nome}.anterior`, { type: "arrayBuffer" });
   if (anterior && anterior.data) {
     // Troca: anterior → atual, atual → anterior (permite "desfazer o desfazer").
     const atual = await s.getWithMetadata(nome, { type: "arrayBuffer" });
-    await s.set(nome, anterior.data, { metadata: anterior.metadata || {} });
+    const metadata = anterior.metadata || {};
+    await s.set(nome, anterior.data, { metadata });
     if (atual && atual.data) await s.set(`${nome}.anterior`, atual.data, { metadata: atual.metadata || {} });
     else await s.delete(`${nome}.anterior`);
-    return "blob";
+    return {
+      nome, titulo: def.titulo, editavel: def.editavel, motivo: def.motivo,
+      origem: "blob", tamanho: metadata.tamanho ?? null, data: metadata.data || null,
+      temAnterior: !!(atual && atual.data),
+    };
   }
   // Sem anterior em blob: a versão anterior é a do bundle.
   await s.delete(nome);
-  return "bundle";
+  let tamanho = null;
+  try { tamanho = fs.statSync(getBundlePath(nome)).size; } catch (_) {}
+  return { nome, titulo: def.titulo, editavel: def.editavel, motivo: def.motivo, origem: "bundle", tamanho, data: null, temAnterior: false };
 }
 
 // ── Histórico ────────────────────────────────────────────────────────────────
