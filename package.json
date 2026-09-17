@@ -6,6 +6,7 @@
     "dev": "netlify dev"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.0",
     "pdf-lib": "^1.17.1",
     "resend": "^3.2.0",
     "node-fetch": "^3.3.2"

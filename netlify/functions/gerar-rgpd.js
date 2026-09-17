@@ -5,6 +5,7 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { Resend } from "resend";
 import fs from "fs";
 import path from "path";
+import { initStorage, getConsultores, getDocumento, getTextos } from "./lib/storage.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,32 +76,22 @@ function horaFormatada(date = new Date()) {
   return date.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
 }
 
-// Resolve o código de consultor (vindo do URL ?c=codigo) para { code, nome, email }
-// a partir da env var CONSULTORES_JSON. Formato aceite:
-//   {"joana": {"nome": "Joana Silva", "email": "joana@lusotravel.pt"}, "pedro": "pedro@lusotravel.pt"}
-// Qualquer problema (var ausente, JSON malformado, código desconhecido, email inválido)
-// devolve null e o fluxo segue sem consultor — nunca bloqueia o consentimento do cliente.
-function resolveConsultor(code) {
+// Resolve o código de consultor (vindo do URL ?c=codigo) para { code, nome, email }.
+// A lista vem de storage.getConsultores() (backoffice/blob, com fallback para a env var
+// CONSULTORES_JSON). Qualquer problema (código desconhecido, email inválido) devolve null
+// e o fluxo segue sem consultor — nunca bloqueia o consentimento do cliente.
+async function resolveConsultor(code) {
   if (!code || typeof code !== "string") return null;
-  const raw = process.env.CONSULTORES_JSON;
-  if (!raw) return null;
 
-  let map;
-  try {
-    map = JSON.parse(raw);
-  } catch (err) {
-    console.error("CONSULTORES_JSON inválido (JSON malformado):", err.message);
-    return null;
-  }
-
+  const { map, origem } = await getConsultores();
   const entry = map[code];
   if (!entry) {
-    console.warn("Consultor não encontrado no mapping:", code);
+    console.warn("Consultor não encontrado no mapping (origem:", origem + "):", code);
     return null;
   }
 
-  const email = typeof entry === "string" ? entry : entry.email;
-  const nome  = typeof entry === "string" ? code  : (entry.nome || code);
+  const email = entry.email;
+  const nome  = entry.nome || code;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     console.error("Email do consultor inválido para", code, ":", email);
     return null;
@@ -328,8 +319,11 @@ async function gerarPDF({ nome, doc, email, marketing, dataHora, consultor }) {
   finPages.forEach(p => pdfDoc.addPage(p));
 
   // ── CGV ───────────────────────────────────────────────────────────────────
-  await addSeparator("Condições Gerais de Venda", "Válido de 01/01/2025 a 31/12/2026");
-  const cgvDoc   = await PDFDocument.load(fs.readFileSync(getPdfPath("cgv.pdf")));
+  const textos = await getTextos();
+  const cgv    = await getDocumento("cgv.pdf");
+  console.log("CGV carregada (origem:", cgv.origem + ", tamanho:", cgv.bytes.length + ")");
+  await addSeparator("Condições Gerais de Venda", textos.cgvValidade);
+  const cgvDoc   = await PDFDocument.load(cgv.bytes);
   const cgvPages = await pdfDoc.copyPages(cgvDoc, cgvDoc.getPageIndices());
   cgvPages.forEach(p => pdfDoc.addPage(p));
 
@@ -339,6 +333,7 @@ async function gerarPDF({ nome, doc, email, marketing, dataHora, consultor }) {
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 export const handler = async (event) => {
+  initStorage(event);
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ message: "Método não permitido" }) };
   }
@@ -359,7 +354,7 @@ export const handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ message: "Email inválido" }) };
   }
 
-  const consultor = resolveConsultor(consultorCode);
+  const consultor = await resolveConsultor(consultorCode);
   if (consultor) {
     console.log("Consultor resolvido:", consultor.code, "→", consultor.email);
   } else if (consultorCode) {

@@ -11,3 +11,12 @@
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
+
+# A CGV pode ser substituída no backoffice (Netlify Blobs). Este rewrite faz com que
+# o link estático /cgv.pdf sirva sempre a versão atual, com fallback para o ficheiro
+# do bundle. `force = true` é necessário porque public/cgv.pdf existe como ficheiro.
+[[redirects]]
+  from = "/cgv.pdf"
+  to = "/.netlify/functions/documento?nome=cgv.pdf"
+  status = 200
+  force = true
