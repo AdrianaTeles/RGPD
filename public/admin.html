@@ -56,9 +56,12 @@
     .hist { font-size: 13px; }
     .hist td:first-child { white-space: nowrap; color: var(--muted); }
     .link { font-size: 13px; color: var(--navy); }
+    .linkcell { display: flex; flex-direction: column; gap: 4px; }
+    .linkcell small { font-size: 12px; color: var(--muted); word-break: break-all; }
+    button.copy { background: var(--white); color: var(--navy); border-color: var(--border); padding: 5px 10px; font-size: 13px; white-space: nowrap; }
+    button.copy:hover { background: var(--cream2); }
     #login-card { max-width: 420px; margin: 60px auto; }
     .hidden { display: none !important; }
-    .dirty { color: var(--gold); font-size: 13px; }
     @media (max-width: 640px) {
       .row { grid-template-columns: 1fr; }
       header { padding: 0 16px; }
@@ -100,6 +103,7 @@
       <p class="hint">
         Cada consultor tem um link próprio do formulário. Quando um cliente submete por esse link, o consultor recebe
         cópia do email e o nome fica registado no PDF. O cliente não vê o consultor.
+        As alterações são guardadas de imediato ao adicionar ou remover.
       </p>
       <table>
         <thead><tr><th>Código</th><th>Nome</th><th>Email</th><th>Link</th><th></th></tr></thead>
@@ -109,11 +113,7 @@
         <div><label for="c-codigo">Código</label><input type="text" id="c-codigo" placeholder="ex: joana" pattern="[a-z0-9-]{1,32}" /></div>
         <div><label for="c-nome">Nome</label><input type="text" id="c-nome" placeholder="Joana Silva" /></div>
         <div><label for="c-email">Email</label><input type="email" id="c-email" placeholder="joana@lusotravel.pt" /></div>
-        <div><button type="button" id="btn-add" class="secondary">Adicionar</button></div>
-      </div>
-      <div class="actions">
-        <button type="button" id="btn-save-cons" disabled>Guardar alterações</button>
-        <span class="dirty hidden" id="cons-dirty">Alterações por guardar</span>
+        <div><button type="button" id="btn-add">Adicionar</button></div>
       </div>
       <div class="msg" id="cons-msg"></div>
     </div>
@@ -187,11 +187,7 @@
   });
 
   // ── Consultores ────────────────────────────────────────────────────────────
-  let consultores = {}, consDirty = false;
-
-  function setDirty(v) {
-    consDirty = v; $('btn-save-cons').disabled = !v; $('cons-dirty').classList.toggle('hidden', !v);
-  }
+  let consultores = {};
 
   function renderConsultores() {
     const base = location.origin + '/?c=';
@@ -201,17 +197,41 @@
         <td><code>${esc(c)}</code></td>
         <td>${esc(e.nome)}</td>
         <td>${esc(e.email)}</td>
-        <td><a class="link" href="${esc(base + c)}" target="_blank" rel="noopener">${esc(base + c)}</a></td>
+        <td><div class="linkcell"><button type="button" class="copy" data-copy="${esc(base + c)}">Copiar link</button><small>?c=${esc(c)}</small></div></td>
         <td><button type="button" class="danger" data-rm="${esc(c)}">Remover</button></td>
       </tr>`).join('') : '<tr><td colspan="5" style="color:var(--muted)">Sem consultores.</td></tr>';
   }
 
-  $('cons-body').addEventListener('click', (e) => {
+  // Grava a lista inteira no servidor; devolve true se gravou.
+  async function guardarConsultores(sucesso) {
+    try {
+      const data = await api('admin-consultores', json('PUT', { consultores }));
+      consultores = data.consultores;
+      $('cons-origem').textContent = 'guardado no backoffice'; $('cons-origem').className = 'badge blob';
+      renderConsultores(); msg('cons-msg', sucesso, 'ok'); carregarHistorico();
+      return true;
+    } catch (err) {
+      msg('cons-msg', err.message, 'error');
+      await carregarConsultores().catch(() => {}); // repõe o estado real do servidor
+      return false;
+    }
+  }
+
+  $('cons-body').addEventListener('click', async (e) => {
+    const copy = e.target.dataset?.copy;
+    if (copy) {
+      try { await navigator.clipboard.writeText(copy); e.target.textContent = 'Copiado ✓'; setTimeout(() => { e.target.textContent = 'Copiar link'; }, 1500); }
+      catch (_) { prompt('Copie o link:', copy); }
+      return;
+    }
     const c = e.target.dataset?.rm; if (!c) return;
-    delete consultores[c]; renderConsultores(); setDirty(true);
+    if (!confirm(`Remover o consultor "${consultores[c]?.nome || c}"?\n\nO link ?c=${c} deixa de funcionar de imediato.`)) return;
+    e.target.disabled = true;
+    delete consultores[c];
+    await guardarConsultores(`Consultor "${c}" removido.`);
   });
 
-  $('btn-add').addEventListener('click', () => {
+  $('btn-add').addEventListener('click', async () => {
     const codigo = $('c-codigo').value.trim().toLowerCase();
     const nome   = $('c-nome').value.trim();
     const email  = $('c-email').value.trim().toLowerCase();
@@ -219,18 +239,11 @@
     if (!nome) return msg('cons-msg', 'Indique o nome.', 'error');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return msg('cons-msg', 'Email inválido.', 'error');
     if (consultores[codigo]) return msg('cons-msg', `O código "${codigo}" já existe.`, 'error');
+    $('btn-add').disabled = true;
     consultores[codigo] = { nome, email };
-    $('c-codigo').value = $('c-nome').value = $('c-email').value = '';
-    msg('cons-msg', '', ''); renderConsultores(); setDirty(true);
-  });
-
-  $('btn-save-cons').addEventListener('click', async () => {
-    $('btn-save-cons').disabled = true;
-    try {
-      const data = await api('admin-consultores', json('PUT', { consultores }));
-      consultores = data.consultores; $('cons-origem').textContent = 'guardado no backoffice'; $('cons-origem').className = 'badge blob';
-      renderConsultores(); setDirty(false); msg('cons-msg', 'Consultores guardados. Já está em vigor.', 'ok'); carregarHistorico();
-    } catch (err) { msg('cons-msg', err.message, 'error'); $('btn-save-cons').disabled = false; }
+    const ok = await guardarConsultores(`Consultor "${nome}" adicionado. O link ?c=${codigo} já funciona.`);
+    if (ok) $('c-codigo').value = $('c-nome').value = $('c-email').value = '';
+    $('btn-add').disabled = false;
   });
 
   async function carregarConsultores() {
@@ -238,7 +251,7 @@
     consultores = data.consultores;
     const origem = { blob: ['guardado no backoffice', 'badge blob'], env: ['a usar a variável CONSULTORES_JSON', 'badge'], vazio: ['lista vazia', 'badge'] }[data.origem] || ['', 'badge'];
     $('cons-origem').textContent = origem[0]; $('cons-origem').className = origem[1];
-    renderConsultores(); setDirty(false);
+    renderConsultores();
   }
 
   // ── Documentos ─────────────────────────────────────────────────────────────
@@ -323,7 +336,6 @@
     try { await api('admin-auth'); mostrarApp(); await carregarTudo(); } catch (_) { mostrarLogin(); }
   })();
 
-  window.addEventListener('beforeunload', (e) => { if (consDirty) { e.preventDefault(); e.returnValue = ''; } });
 })();
 </script>
 </body>
