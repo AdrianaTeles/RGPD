@@ -85,8 +85,32 @@ git push -u origin main
 | `RESEND_API_KEY` | `re_xxxxxxxxxxxxxxxxxxxx` |
 | `EMAIL_FROM` | `Lusotravel <noreply@lusotravel.pt>` |
 | `EMAIL_AGENCIA` | `geral@lusotravel.pt` |
+| `CONSULTORES_JSON` | `{"joana":{"nome":"Joana Silva","email":"joana@lusotravel.pt"}}` (opcional, ver abaixo) |
 
 3. Clica **Save** e depois faz **Trigger deploy** para o site recarregar com as variáveis.
+
+---
+
+### Consultores (links personalizados)
+
+Cada consultor pode ter um link próprio do formulário: `https://<site>/?c=<codigo>`.
+Quando um cliente submete o formulário por esse link:
+
+- o consultor recebe cópia do email que vai para a agência (a agência recebe sempre);
+- o nome do consultor fica registado na capa do PDF e no assunto do email.
+
+O cliente nunca vê nem escolhe o consultor — o código vai apenas no URL.
+
+A lista vive na variável `CONSULTORES_JSON` (JSON numa só linha), que mapeia código → consultor.
+Aceita objeto `{"nome", "email"}` ou só o email como string:
+
+```json
+{"joana":{"nome":"Joana Silva","email":"joana@lusotravel.pt"},"pedro":"pedro@lusotravel.pt"}
+```
+
+Se o código não existir, a variável estiver em falta ou o JSON for inválido, o formulário
+funciona na mesma sem consultor (fica um aviso nos logs da function). Depois de alterar a
+variável é preciso fazer **Trigger deploy** para as functions a lerem.
 
 ---
 

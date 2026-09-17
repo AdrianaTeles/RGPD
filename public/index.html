@@ -568,11 +568,16 @@
     spinner.style.display = 'block';
     document.getElementById('msg').className = 'msg';
 
+    // Código do consultor vem do URL (ex: ?c=joana). Se ausente, o backend cai no comportamento
+    // actual (envia só para EMAIL_AGENCIA). O cliente nunca vê nem mexe neste valor.
+    const consultorCode = new URLSearchParams(window.location.search).get('c') || '';
+
     const payload = {
       nome:      document.getElementById('nome').value.trim(),
       doc:       document.getElementById('doc').value.trim(),
       email:     document.getElementById('email').value.trim(),
       marketing: document.getElementById('chk-mkt').checked,
+      consultor: consultorCode,
     };
 
     try {

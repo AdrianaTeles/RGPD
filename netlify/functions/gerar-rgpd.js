@@ -75,6 +75,39 @@ function horaFormatada(date = new Date()) {
   return date.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
 }
 
+// Resolve o código de consultor (vindo do URL ?c=codigo) para { code, nome, email }
+// a partir da env var CONSULTORES_JSON. Formato aceite:
+//   {"joana": {"nome": "Joana Silva", "email": "joana@lusotravel.pt"}, "pedro": "pedro@lusotravel.pt"}
+// Qualquer problema (var ausente, JSON malformado, código desconhecido, email inválido)
+// devolve null e o fluxo segue sem consultor — nunca bloqueia o consentimento do cliente.
+function resolveConsultor(code) {
+  if (!code || typeof code !== "string") return null;
+  const raw = process.env.CONSULTORES_JSON;
+  if (!raw) return null;
+
+  let map;
+  try {
+    map = JSON.parse(raw);
+  } catch (err) {
+    console.error("CONSULTORES_JSON inválido (JSON malformado):", err.message);
+    return null;
+  }
+
+  const entry = map[code];
+  if (!entry) {
+    console.warn("Consultor não encontrado no mapping:", code);
+    return null;
+  }
+
+  const email = typeof entry === "string" ? entry : entry.email;
+  const nome  = typeof entry === "string" ? code  : (entry.nome || code);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.error("Email do consultor inválido para", code, ":", email);
+    return null;
+  }
+  return { email, nome, code };
+}
+
 function wrapText(text, font, fontSize, maxWidth) {
   const words = text.split(" ");
   const lines = [];
@@ -133,7 +166,7 @@ async function substituirNomeNaFIN(finPath, nome) {
 
 // ── Gerador de PDF ────────────────────────────────────────────────────────────
 
-async function gerarPDF({ nome, doc, email, marketing, dataHora }) {
+async function gerarPDF({ nome, doc, email, marketing, dataHora, consultor }) {
   const pdfDoc = await PDFDocument.create();
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold    = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -175,7 +208,8 @@ async function gerarPDF({ nome, doc, email, marketing, dataHora }) {
   capa.drawLine({ start: { x: margin, y }, end: { x: width - margin, y }, thickness: 0.8, color: rgb(0.75, 0.85, 0.93) });
 
   y -= 12;
-  capa.drawRectangle({ x: margin, y: y - 108, width: inner, height: 122, color: lightBg, borderColor: rgb(0.82,0.88,0.94), borderWidth: 1 });
+  const boxH = consultor ? 141 : 122;
+  capa.drawRectangle({ x: margin, y: y - (boxH - 14), width: inner, height: boxH, color: lightBg, borderColor: rgb(0.82,0.88,0.94), borderWidth: 1 });
   y -= 6;
 
   const drawRow = (label, value, yPos) => {
@@ -188,6 +222,9 @@ async function gerarPDF({ nome, doc, email, marketing, dataHora }) {
   y = drawRow("Email:", email, y);
   y = drawRow("Data:", dataPortugues(dataHora), y);
   y = drawRow("Hora (UTC):", horaFormatada(dataHora), y);
+  if (consultor) {
+    y = drawRow("Consultor responsável:", consultor.nome, y);
+  }
   y -= 10;
 
   const drawCheck = (text, yPos) => {
@@ -313,7 +350,7 @@ export const handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ message: "JSON inválido" }) };
   }
 
-  const { nome, doc, email, marketing } = body;
+  const { nome, doc, email, marketing, consultor: consultorCode } = body;
 
   if (!nome || !doc || !email) {
     return { statusCode: 400, body: JSON.stringify({ message: "Campos obrigatórios em falta" }) };
@@ -322,11 +359,18 @@ export const handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ message: "Email inválido" }) };
   }
 
+  const consultor = resolveConsultor(consultorCode);
+  if (consultor) {
+    console.log("Consultor resolvido:", consultor.code, "→", consultor.email);
+  } else if (consultorCode) {
+    console.log("Código de consultor recebido mas não resolvido:", consultorCode);
+  }
+
   const dataHora = new Date();
 
   let pdfBytes;
   try {
-    pdfBytes = await gerarPDF({ nome, doc, email, marketing: !!marketing, dataHora });
+    pdfBytes = await gerarPDF({ nome, doc, email, marketing: !!marketing, dataHora, consultor });
   } catch (err) {
     console.error("Erro ao gerar PDF:", err);
     return { statusCode: 500, body: JSON.stringify({ message: "Erro ao gerar o PDF: " + err.message }) };
@@ -364,10 +408,17 @@ export const handler = async (event) => {
     attachments: [{ filename, content: pdfBase64 }],
   };
 
+  // Agência recebe sempre; o consultor (se resolvido) recebe cópia. Set evita duplicar
+  // quando o email do consultor coincide com EMAIL_AGENCIA.
+  const emailAgenciaAddr = process.env.EMAIL_AGENCIA || "geral@lusotravel.pt";
+  const destinatariosAgencia = [...new Set([emailAgenciaAddr, consultor?.email].filter(Boolean))];
+
   const emailAgencia = {
     from: fromAddr,
-    to:   [process.env.EMAIL_AGENCIA || "geral@lusotravel.pt"],
-    subject: `[RGPD] Novo consentimento — ${nome}`,
+    to:   destinatariosAgencia,
+    subject: consultor
+      ? `[RGPD] Novo consentimento — ${nome} (consultor: ${consultor.nome})`
+      : `[RGPD] Novo consentimento — ${nome}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #dae4ef;border-radius:6px;overflow:hidden">
         <div style="background:#1a3a5c;padding:16px 24px">
@@ -379,6 +430,7 @@ export const handler = async (event) => {
             <tr style="border-bottom:1px solid #eef2f6"><td style="padding:8px 0;color:#6a8090">CC / Passaporte</td><td style="padding:8px 0">${doc}</td></tr>
             <tr style="border-bottom:1px solid #eef2f6"><td style="padding:8px 0;color:#6a8090">Email</td><td style="padding:8px 0">${email}</td></tr>
             <tr style="border-bottom:1px solid #eef2f6"><td style="padding:8px 0;color:#6a8090">Marketing</td><td style="padding:8px 0">${marketing ? "✅ Sim" : "❌ Não"}</td></tr>
+            ${consultor ? `<tr style="border-bottom:1px solid #eef2f6"><td style="padding:8px 0;color:#6a8090">Consultor</td><td style="padding:8px 0;font-weight:700">${consultor.nome} &lt;${consultor.email}&gt;</td></tr>` : ""}
             <tr><td style="padding:8px 0;color:#6a8090">Data / Hora</td><td style="padding:8px 0">${dataPortugues(dataHora)}, ${horaFormatada(dataHora)}</td></tr>
           </table>
         </div>
