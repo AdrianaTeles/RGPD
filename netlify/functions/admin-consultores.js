@@ -5,11 +5,13 @@
 import { initStorage, getConsultores, setConsultores, addHistorico } from "./lib/storage.js";
 import { requireAuth, json, ipDoPedido } from "./lib/auth.js";
 
-const CODIGO_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
+// O código é livre (a agência já usa formatos como "nome.apelido"). Só se garante que
+// funciona num URL: sem espaços e com tamanho razoável.
+const CODIGO_RE = /^\S{1,64}$/;
 const EMAIL_RE  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_CONSULTORES = 100;
 
-// Devolve { ok: true, map } ou { ok: false, erros: [] }. Normaliza códigos para minúsculas.
+// Devolve { ok: true, map } ou { ok: false, erros: [] }.
 function validar(input) {
   const erros = [];
   if (!input || typeof input !== "object" || Array.isArray(input)) return { ok: false, erros: ["Formato inválido."] };
@@ -19,10 +21,10 @@ function validar(input) {
   const map = {};
   const emails = new Set();
   for (const [codigoRaw, entry] of entradas) {
-    const codigo = String(codigoRaw).trim().toLowerCase();
+    const codigo = String(codigoRaw).trim();
     const nome   = String(entry?.nome ?? "").trim();
     const email  = String(entry?.email ?? "").trim().toLowerCase();
-    if (!CODIGO_RE.test(codigo)) erros.push(`Código "${codigoRaw}" inválido (só letras minúsculas, números e hífen, até 32).`);
+    if (!CODIGO_RE.test(codigo)) erros.push(`Código "${codigoRaw}" inválido (sem espaços, até 64 caracteres).`);
     if (!nome || nome.length > 80) erros.push(`Nome em falta ou demasiado longo para "${codigo}".`);
     if (!EMAIL_RE.test(email) || email.length > 254) erros.push(`Email inválido para "${codigo}".`);
     if (map[codigo]) erros.push(`Código "${codigo}" repetido.`);

@@ -110,7 +110,7 @@
         <tbody id="cons-body"></tbody>
       </table>
       <div class="row">
-        <div><label for="c-codigo">Código</label><input type="text" id="c-codigo" placeholder="ex: joana" pattern="[a-z0-9-]{1,32}" /></div>
+        <div><label for="c-codigo">Código</label><input type="text" id="c-codigo" placeholder="ex: joana.silva" /></div>
         <div><label for="c-nome">Nome</label><input type="text" id="c-nome" placeholder="Joana Silva" /></div>
         <div><label for="c-email">Email</label><input type="email" id="c-email" placeholder="joana@lusotravel.pt" /></div>
         <div><button type="button" id="btn-add">Adicionar</button></div>
@@ -232,10 +232,10 @@
   });
 
   $('btn-add').addEventListener('click', async () => {
-    const codigo = $('c-codigo').value.trim().toLowerCase();
+    const codigo = $('c-codigo').value.trim();
     const nome   = $('c-nome').value.trim();
     const email  = $('c-email').value.trim().toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]{0,31}$/.test(codigo)) return msg('cons-msg', 'Código inválido: só letras minúsculas, números e hífen (até 32).', 'error');
+    if (!/^\S{1,64}$/.test(codigo)) return msg('cons-msg', 'Indique o código (sem espaços, até 64 caracteres).', 'error');
     if (!nome) return msg('cons-msg', 'Indique o nome.', 'error');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return msg('cons-msg', 'Email inválido.', 'error');
     if (consultores[codigo]) return msg('cons-msg', `O código "${codigo}" já existe.`, 'error');
