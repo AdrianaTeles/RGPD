@@ -20,3 +20,9 @@
   to = "/.netlify/functions/documento?nome=cgv.pdf"
   status = 200
   force = true
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"

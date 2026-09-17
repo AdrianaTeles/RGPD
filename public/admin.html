@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Backoffice · RGPD Lusotravel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1a3a5c; --navy2: #0f2236; --gold: #b89355; --gold-l: #d4af72;
+      --cream: #faf8f5; --cream2: #f2ede6; --border: #e2d9cc; --text: #1e2830;
+      --muted: #7a7060; --red: #b03a2e; --green: #1d7a4a; --white: #fff;
+    }
+    body { font-family: 'Outfit', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+    header { background: var(--navy2); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+    header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), var(--gold-l), var(--gold), transparent); }
+    header img { height: 38px; }
+    header .right { display: flex; align-items: center; gap: 16px; color: rgba(255,255,255,0.6); font-size: 13px; }
+    main { max-width: 860px; margin: 32px auto; padding: 0 16px; }
+    h1 { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+    .sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+    .card h2 { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--navy); margin-bottom: 4px; }
+    .card .hint { color: var(--muted); font-size: 13px; margin-bottom: 18px; line-height: 1.5; }
+    label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    input[type=text], input[type=email], input[type=password] { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font: inherit; font-size: 14px; background: var(--white); }
+    input:focus { outline: none; border-color: var(--navy); }
+    button { font: inherit; font-size: 14px; font-weight: 500; padding: 10px 18px; border-radius: 6px; border: 1px solid var(--navy); background: var(--navy); color: var(--white); cursor: pointer; }
+    button:hover { background: var(--navy2); }
+    button:disabled { opacity: .5; cursor: default; }
+    button.secondary { background: var(--white); color: var(--navy); }
+    button.secondary:hover { background: var(--cream2); }
+    button.danger { background: var(--white); color: var(--red); border-color: var(--border); padding: 6px 10px; font-size: 13px; }
+    button.danger:hover { background: #fbeeec; border-color: var(--red); }
+    button.small { padding: 6px 12px; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--cream2); vertical-align: middle; }
+    td code { background: var(--cream2); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .row { display: grid; grid-template-columns: 1fr 1.4fr 1.8fr auto; gap: 10px; align-items: end; margin-top: 16px; }
+    .actions { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+    .msg { font-size: 14px; padding: 10px 14px; border-radius: 6px; margin-top: 14px; display: none; line-height: 1.5; }
+    .msg.ok { display: block; background: #e9f5ee; color: var(--green); }
+    .msg.error { display: block; background: #fbeeec; color: var(--red); }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--cream2); color: var(--muted); margin-left: 8px; vertical-align: middle; }
+    .badge.blob { background: #e9f5ee; color: var(--green); }
+    .doc { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--cream2); flex-wrap: wrap; }
+    .doc:last-child { border-bottom: none; }
+    .doc .info { flex: 1; min-width: 240px; }
+    .doc .info strong { display: block; font-size: 15px; color: var(--navy); }
+    .doc .info span { font-size: 13px; color: var(--muted); }
+    .doc .info .locked { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); line-height: 1.45; background: var(--cream2); padding: 8px 10px; border-radius: 6px; }
+    .doc .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .hist { font-size: 13px; }
+    .hist td:first-child { white-space: nowrap; color: var(--muted); }
+    .link { font-size: 13px; color: var(--navy); }
+    #login-card { max-width: 420px; margin: 60px auto; }
+    .hidden { display: none !important; }
+    .dirty { color: var(--gold); font-size: 13px; }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+      header { padding: 0 16px; }
+      .card { padding: 18px 16px; }
+      th:nth-child(1), td:nth-child(1) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="Lusotravel" />
+  <div class="right">
+    <span>Backoffice RGPD</span>
+    <button id="btn-logout" class="secondary small hidden">Sair</button>
+  </div>
+</header>
+
+<main>
+  <!-- LOGIN -->
+  <div class="card" id="login-card">
+    <h2>Entrar</h2>
+    <p class="hint">Área reservada à agência.</p>
+    <form id="login-form" autocomplete="off">
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <div class="actions"><button type="submit" id="btn-login">Entrar</button></div>
+      <div class="msg" id="login-msg"></div>
+    </form>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <h1>Backoffice</h1>
+    <p class="sub">Gerir consultores e documentos do formulário de consentimentos. As alterações aplicam-se de imediato, sem novo deploy.</p>
+
+    <!-- CONSULTORES -->
+    <div class="card">
+      <h2>Consultores <span class="badge" id="cons-origem"></span></h2>
+      <p class="hint">
+        Cada consultor tem um link próprio do formulário. Quando um cliente submete por esse link, o consultor recebe
+        cópia do email e o nome fica registado no PDF. O cliente não vê o consultor.
+      </p>
+      <table>
+        <thead><tr><th>Código</th><th>Nome</th><th>Email</th><th>Link</th><th></th></tr></thead>
+        <tbody id="cons-body"></tbody>
+      </table>
+      <div class="row">
+        <div><label for="c-codigo">Código</label><input type="text" id="c-codigo" placeholder="ex: joana" pattern="[a-z0-9-]{1,32}" /></div>
+        <div><label for="c-nome">Nome</label><input type="text" id="c-nome" placeholder="Joana Silva" /></div>
+        <div><label for="c-email">Email</label><input type="email" id="c-email" placeholder="joana@lusotravel.pt" /></div>
+        <div><button type="button" id="btn-add" class="secondary">Adicionar</button></div>
+      </div>
+      <div class="actions">
+        <button type="button" id="btn-save-cons" disabled>Guardar alterações</button>
+        <span class="dirty hidden" id="cons-dirty">Alterações por guardar</span>
+      </div>
+      <div class="msg" id="cons-msg"></div>
+    </div>
+
+    <!-- DOCUMENTOS -->
+    <div class="card">
+      <h2>Documentos</h2>
+      <p class="hint">PDFs anexados ao registo de consentimentos. Só ficheiros PDF, até 4 MB. A versão anterior fica guardada e pode ser reposta.</p>
+      <div id="docs"></div>
+      <div style="margin-top: 22px">
+        <label for="t-cgv-validade">Texto de validade da CGV (aparece na página separadora do PDF)</label>
+        <div class="row" style="grid-template-columns: 1fr auto; margin-top: 0">
+          <input type="text" id="t-cgv-validade" maxlength="120" />
+          <button type="button" id="btn-save-textos" class="secondary">Guardar texto</button>
+        </div>
+      </div>
+      <div class="msg" id="docs-msg"></div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="card">
+      <h2>Histórico</h2>
+      <p class="hint">Últimas alterações feitas neste backoffice.</p>
+      <table class="hist">
+        <thead><tr><th>Quando</th><th>Ação</th><th>Detalhe</th></tr></thead>
+        <tbody id="hist-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const API = '/.netlify/functions/';
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function api(path, opts = {}) {
+    const res = await fetch(API + path, { credentials: 'same-origin', ...opts });
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if (res.status === 401) { mostrarLogin(); throw new Error(data.message || 'Sessão expirada. Entre novamente.'); }
+    if (!res.ok) throw new Error((data.message || `Erro ${res.status}`) + (data.erros ? ' ' + data.erros.join(' ') : ''));
+    return data;
+  }
+  const json = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+  function msg(id, texto, tipo) {
+    const el = $(id); el.textContent = texto; el.className = 'msg ' + (texto ? tipo : '');
+  }
+  const quando = (iso) => new Date(iso).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' });
+  const kb = (n) => n == null ? '—' : (n / 1024).toFixed(0) + ' KB';
+
+  // ── Login ──────────────────────────────────────────────────────────────────
+  function mostrarLogin() { $('login-card').classList.remove('hidden'); $('app').classList.add('hidden'); $('btn-logout').classList.add('hidden'); }
+  function mostrarApp()   { $('login-card').classList.add('hidden');    $('app').classList.remove('hidden'); $('btn-logout').classList.remove('hidden'); }
+
+  $('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('btn-login').disabled = true; msg('login-msg', '', '');
+    try {
+      await api('admin-auth', json('POST', { password: $('password').value }));
+      $('password').value = '';
+      mostrarApp(); await carregarTudo();
+    } catch (err) { msg('login-msg', err.message, 'error'); }
+    finally { $('btn-login').disabled = false; }
+  });
+  $('btn-logout').addEventListener('click', async () => {
+    try { await api('admin-auth', { method: 'DELETE' }); } catch (_) {}
+    mostrarLogin();
+  });
+
+  // ── Consultores ────────────────────────────────────────────────────────────
+  let consultores = {}, consDirty = false;
+
+  function setDirty(v) {
+    consDirty = v; $('btn-save-cons').disabled = !v; $('cons-dirty').classList.toggle('hidden', !v);
+  }
+
+  function renderConsultores() {
+    const base = location.origin + '/?c=';
+    const rows = Object.entries(consultores).sort(([a], [b]) => a.localeCompare(b));
+    $('cons-body').innerHTML = rows.length ? rows.map(([c, e]) => `
+      <tr>
+        <td><code>${esc(c)}</code></td>
+        <td>${esc(e.nome)}</td>
+        <td>${esc(e.email)}</td>
+        <td><a class="link" href="${esc(base + c)}" target="_blank" rel="noopener">${esc(base + c)}</a></td>
+        <td><button type="button" class="danger" data-rm="${esc(c)}">Remover</button></td>
+      </tr>`).join('') : '<tr><td colspan="5" style="color:var(--muted)">Sem consultores.</td></tr>';
+  }
+
+  $('cons-body').addEventListener('click', (e) => {
+    const c = e.target.dataset?.rm; if (!c) return;
+    delete consultores[c]; renderConsultores(); setDirty(true);
+  });
+
+  $('btn-add').addEventListener('click', () => {
+    const codigo = $('c-codigo').value.trim().toLowerCase();
+    const nome   = $('c-nome').value.trim();
+    const email  = $('c-email').value.trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]{0,31}$/.test(codigo)) return msg('cons-msg', 'Código inválido: só letras minúsculas, números e hífen (até 32).', 'error');
+    if (!nome) return msg('cons-msg', 'Indique o nome.', 'error');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return msg('cons-msg', 'Email inválido.', 'error');
+    if (consultores[codigo]) return msg('cons-msg', `O código "${codigo}" já existe.`, 'error');
+    consultores[codigo] = { nome, email };
+    $('c-codigo').value = $('c-nome').value = $('c-email').value = '';
+    msg('cons-msg', '', ''); renderConsultores(); setDirty(true);
+  });
+
+  $('btn-save-cons').addEventListener('click', async () => {
+    $('btn-save-cons').disabled = true;
+    try {
+      const data = await api('admin-consultores', json('PUT', { consultores }));
+      consultores = data.consultores; $('cons-origem').textContent = 'guardado no backoffice'; $('cons-origem').className = 'badge blob';
+      renderConsultores(); setDirty(false); msg('cons-msg', 'Consultores guardados. Já está em vigor.', 'ok'); carregarHistorico();
+    } catch (err) { msg('cons-msg', err.message, 'error'); $('btn-save-cons').disabled = false; }
+  });
+
+  async function carregarConsultores() {
+    const data = await api('admin-consultores');
+    consultores = data.consultores;
+    const origem = { blob: ['guardado no backoffice', 'badge blob'], env: ['a usar a variável CONSULTORES_JSON', 'badge'], vazio: ['lista vazia', 'badge'] }[data.origem] || ['', 'badge'];
+    $('cons-origem').textContent = origem[0]; $('cons-origem').className = origem[1];
+    renderConsultores(); setDirty(false);
+  }
+
+  // ── Documentos ─────────────────────────────────────────────────────────────
+  function renderDocs(docs) {
+    $('docs').innerHTML = docs.map(d => `
+      <div class="doc">
+        <div class="info">
+          <strong>${esc(d.titulo)} <span class="badge ${d.origem === 'blob' ? 'blob' : ''}">${d.origem === 'blob' ? 'substituído no backoffice' : 'versão original'}</span></strong>
+          <span>${esc(d.nome)} · ${kb(d.tamanho)}${d.data ? ' · ' + quando(d.data) : ''}</span>
+          ${d.editavel ? '' : `<span class="locked">🔒 ${esc(d.motivo)}</span>`}
+        </div>
+        <div class="btns">
+          <a class="link" href="/.netlify/functions/documento?nome=${encodeURIComponent(d.nome)}" target="_blank" rel="noopener" style="align-self:center">Ver atual</a>
+          ${d.editavel ? `
+            <input type="file" accept="application/pdf" id="f-${esc(d.nome)}" class="hidden" data-up="${esc(d.nome)}" />
+            <button type="button" class="secondary small" data-pick="${esc(d.nome)}">Substituir…</button>
+            ${(d.temAnterior || d.origem === 'blob') ? `<button type="button" class="secondary small" data-repor="${esc(d.nome)}">Repor ${d.temAnterior ? 'anterior' : 'original'}</button>` : ''}
+          ` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  $('docs').addEventListener('click', async (e) => {
+    const pick = e.target.dataset?.pick, repor = e.target.dataset?.repor;
+    if (pick) return $('f-' + pick).click();
+    if (repor) {
+      e.target.disabled = true; msg('docs-msg', '', '');
+      try { await api(`admin-documentos?nome=${encodeURIComponent(repor)}&acao=repor`, { method: 'POST' });
+            msg('docs-msg', 'Versão anterior reposta.', 'ok'); await carregarDocs(); carregarHistorico(); }
+      catch (err) { msg('docs-msg', err.message, 'error'); e.target.disabled = false; }
+    }
+  });
+
+  $('docs').addEventListener('change', async (e) => {
+    const nome = e.target.dataset?.up; if (!nome) return;
+    const file = e.target.files[0]; if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) return msg('docs-msg', 'Só são aceites ficheiros PDF.', 'error');
+    if (file.size > 4 * 1024 * 1024) return msg('docs-msg', 'Ficheiro demasiado grande (máx. 4 MB).', 'error');
+    if (!confirm(`Substituir "${nome}" por "${file.name}"?\n\nA versão atual fica guardada e pode ser reposta.`)) { e.target.value = ''; return; }
+    msg('docs-msg', 'A enviar…', 'ok');
+    try {
+      await api(`admin-documentos?nome=${encodeURIComponent(nome)}`, { method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: file });
+      msg('docs-msg', `${nome} substituído. Já está em vigor no formulário e nos próximos PDFs.`, 'ok');
+      await carregarDocs(); carregarHistorico();
+    } catch (err) { msg('docs-msg', err.message, 'error'); }
+    finally { e.target.value = ''; }
+  });
+
+  $('btn-save-textos').addEventListener('click', async () => {
+    $('btn-save-textos').disabled = true;
+    try {
+      await api('admin-documentos?textos=1', json('PUT', { textos: { cgvValidade: $('t-cgv-validade').value } }));
+      msg('docs-msg', 'Texto guardado.', 'ok'); carregarHistorico();
+    } catch (err) { msg('docs-msg', err.message, 'error'); }
+    finally { $('btn-save-textos').disabled = false; }
+  });
+
+  async function carregarDocs() {
+    const data = await api('admin-documentos');
+    renderDocs(data.documentos);
+    $('t-cgv-validade').value = data.textos.cgvValidade || '';
+    $('t-cgv-validade').placeholder = data.textosDefault.cgvValidade || '';
+  }
+
+  // ── Histórico ──────────────────────────────────────────────────────────────
+  const ACOES = { 'login': 'Entrada', 'consultores.atualizar': 'Consultores', 'documento.substituir': 'Documento substituído', 'documento.repor': 'Documento reposto', 'textos.atualizar': 'Texto alterado' };
+  async function carregarHistorico() {
+    try {
+      const { historico } = await api('admin-historico');
+      $('hist-body').innerHTML = historico.length ? historico.map(h => `<tr><td>${quando(h.data)}</td><td>${esc(ACOES[h.acao] || h.acao)}</td><td>${esc(h.detalhe)}</td></tr>`).join('')
+        : '<tr><td colspan="3" style="color:var(--muted)">Sem registos.</td></tr>';
+    } catch (_) {}
+  }
+
+  async function carregarTudo() {
+    try { await Promise.all([carregarConsultores(), carregarDocs(), carregarHistorico()]); }
+    catch (err) { msg('cons-msg', err.message, 'error'); }
+  }
+
+  // Arranque: se já há sessão válida, entra diretamente.
+  (async () => {
+    try { await api('admin-auth'); mostrarApp(); await carregarTudo(); } catch (_) { mostrarLogin(); }
+  })();
+
+  window.addEventListener('beforeunload', (e) => { if (consDirty) { e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
+</body>
+</html>
